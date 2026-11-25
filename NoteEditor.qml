@@ -34,13 +34,20 @@ Item {
 
   property string draft: ""
   property bool ready: false
-  property bool dirty: false
 
-  // Revision guards the dirty flag: a completed save only clears edits made
-  // before it started, so keystrokes typed while a write is in flight are not
-  // silently dropped.
-  property int revision: 0
-  property int pendingRev: -1
+  // dirty is computed from what is known to be on disk, so it also clears
+  // when the user reverts to the last saved text without another write
+  // (FileView.setText no-ops on equal content and never emits saved()).
+  readonly property bool dirty: root.ready && Store.needsWrite(root.draft, root.lastSavedText)
+
+  // Content known to be on disk for the current note path.
+  property string lastSavedText: ""
+  // Text handed to the in-flight noteFile / exportFile write.
+  property string pendingText: ""
+  property string pendingExportText: ""
+  // One-shot: skip the noteFile load that races the save-as write after the
+  // default path switches (setPath starts an async read of the new path).
+  property bool skipNextLoad: false
 
   property string defaultPath: ""
   property int autosaveMs: 400
@@ -87,7 +94,9 @@ Item {
     root.autosaveMs = cfg.autosaveMs
     root.rememberPosition = cfg.rememberPosition
     root.ready = true
-    noteFile.reload()
+    // A dirty draft means the last write failed; keep the edits instead of
+    // reloading the file and losing them.
+    if (!root.dirty) noteFile.reload()
   }
 
   function saveConfig() {
@@ -99,24 +108,18 @@ Item {
   }
 
   function noteEdited() {
-    root.revision += 1
-    root.dirty = true
     saveTimer.restart()
   }
 
   function flush() {
-    if (!root.ready || !root.dirty) return
-    root.pendingRev = root.revision
-    noteFile.setText(Store.clampText(root.draft))
+    if (!root.dirty) return
+    root.pendingText = Store.clampText(root.draft)
+    noteFile.setText(root.pendingText)
   }
 
   function flushNow() {
-    if (!root.ready) return
     root.saveAsOpen = false
-    if (root.dirty) {
-      root.pendingRev = root.revision
-      noteFile.setText(Store.clampText(root.draft))
-    }
+    root.flush()
   }
 
   function startSaveAs() {
@@ -131,14 +134,23 @@ Item {
     if (!raw) { root.saveAsOpen = false; return }
     var target = Store.expandPath(root.home, raw)
     root.saveAsOpen = false
-    root.pendingRev = root.revision
+    root.pendingExportText = Store.clampText(root.draft)
     if (target !== root.notePath) {
+      // Repath first: the view's equal-content check would otherwise no-op a
+      // write of unchanged text to the new path. preload: false keeps the
+      // repath from starting a read that the write immediately cancels.
+      exportFile.path = ""
       exportFile.path = target
-      exportFile.setText(Store.clampText(root.draft))
+      exportFile.setText(root.pendingExportText)
     } else {
-      noteFile.setText(Store.clampText(root.draft))
+      root.pendingText = root.pendingExportText
+      noteFile.setText(root.pendingText)
     }
     if (makeDefault && target !== root.defaultPath) {
+      // The repath starts an async read of the destination that can beat the
+      // write above; skip that load so it cannot clobber the editor with the
+      // destination's old (or missing) content.
+      root.skipNextLoad = true
       root.defaultPath = target
       root.saveConfig()
     }
@@ -160,29 +172,44 @@ Item {
     atomicWrites: true
     printErrors: false
     onLoaded: {
+      if (root.skipNextLoad) { root.skipNextLoad = false; return }
       root.restoring = true
       root.draft = Store.clampText(text())
+      root.lastSavedText = root.draft
       editor.text = root.draft
       root.restoring = false
-      root.dirty = false
       root.saveError = false
     }
     onLoadFailed: {
+      if (root.skipNextLoad) { root.skipNextLoad = false; return }
       root.restoring = true
       root.draft = ""
+      root.lastSavedText = ""
       editor.text = ""
       root.restoring = false
-      root.dirty = false
+      root.saveError = false
     }
-    onSaved: if (root.revision === root.pendingRev) root.dirty = false
+    onSaved: {
+      if (root.pendingText === Store.clampText(root.draft)) root.lastSavedText = root.pendingText
+      root.saveError = false
+    }
     onSaveFailed: function(error) { root.saveError = true }
   }
 
   FileView {
     id: exportFile
     atomicWrites: true
+    preload: false
     printErrors: false
-    onSaved: if (root.revision === root.pendingRev) root.dirty = false
+    onSaved: {
+      // A copy-only save leaves dirty alone: the default file has not
+      // received these edits. Only the make-default flow, where the export
+      // target has become the note path, updates the on-disk baseline.
+      if (exportFile.path === root.notePath) {
+        root.lastSavedText = root.pendingExportText
+        root.saveError = false
+      }
+    }
     onSaveFailed: function(error) { root.saveError = true }
   }
 

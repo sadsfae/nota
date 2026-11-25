@@ -13,6 +13,13 @@ Commit messages use Conventional Commits (`feat:`, `fix:`, `chore:`, `doc:`).
 - Cancelling the file chooser opened by `Browse` no longer reopens it in an
   endless loop: the chooser is now started with `exec()` and the button is
   disabled while it runs.
+- Save as with `Use as default` no longer races the note file reload: the note
+  stays in the editor and the destination keeps the saved content instead of
+  the editor being wiped or stale destination content overwriting the note.
+- Save as without `Use as default` no longer clears the `Unsaved` marker:
+  those edits still autosave to the default file.
+- The `Unsaved` marker now clears when the note is reverted to the last saved
+  text, and `Save as...` of unchanged text writes the target file.
 
 ## [0.4.0] - 2026-11-25
 
