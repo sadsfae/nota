@@ -1,14 +1,14 @@
 import QtQuick
-import Qt5Compat.GraphicalEffects
 import Quickshell
 import qs.Commons
 import qs.Ui
 
 // Nota bar icon. Left-click toggles the floating note overlay. The icon is the
-// plugin's own hand-writing-note SVG, tinted to the bar foreground so it
-// follows the active theme. The overlay owns the open state, so this icon makes
-// no claim about it: it is a toggle, not an open/closed indicator.
-Panel {
+// plugin's own hand-writing-note SVG. The overlay owns the open state, so this
+// icon makes no claim about it: it is a toggle, not an open/closed indicator.
+//
+// Rooted on BarWidget (the base every omarchy bar widget extends), not Panel.
+BarWidget {
   id: root
   moduleName: "io.github.sadsfae.nota"
 
@@ -16,6 +16,11 @@ Panel {
   readonly property string omarchyPath: Quickshell.env("OMARCHY_PATH") || "/usr/share/omarchy"
   readonly property string assetPath: Quickshell.env("HOME")
     + "/.config/omarchy/plugins/" + root.pluginId + "/assets/nota.svg"
+
+  visible: true
+  implicitWidth: button.implicitWidth
+  implicitHeight: button.implicitHeight
+
   function toggle() {
     Quickshell.execDetached([
       root.omarchyPath + "/bin/omarchy-shell",
@@ -29,20 +34,12 @@ Panel {
     bar: root.bar
 
     iconComponent: Component {
-      Item {
-        Image {
-          id: img
-          anchors.fill: parent
-          source: "file://" + root.assetPath
-          fillMode: Image.PreserveAspectFit
-          smooth: true
-        }
-
-        ColorOverlay {
-          anchors.fill: parent
-          source: img
-          color: root.bar ? root.bar.foreground : Color.foreground
-        }
+      Image {
+        width: 24
+        height: 24
+        source: "file://" + root.assetPath
+        fillMode: Image.PreserveAspectFit
+        smooth: true
       }
     }
 
