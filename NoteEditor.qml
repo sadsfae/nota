@@ -3,19 +3,15 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
-import Quickshell.Wayland
 import qs.Commons
 import qs.Ui
 import "NoteStore.js" as Store
 
-// Nota floating note surface. A layer-shell card that can be dragged anywhere
-// on the monitor (grip, or Ctrl/Super+drag), resized from any corner, pastes
-// and copies with the usual shortcuts, autosaves to the configured default
-// file, and offers a minimal save-as dialog.
-//
-// The shell drives show/hide through this plugin's own open()/close() and its
-// `opened` property: summon() calls open(), hide() calls close(), and
-// isPluginOpen() reads `opened`. Do not rely on anything else to show the card.
+// Nota floating note window. A regular toplevel window (like Omacalc), so it can
+// be dragged to another monitor or workspace; Hyprland floats it via a window
+// rule. The shell drives show/hide through this plugin's own open()/close() and
+// its `opened` property: summon() calls open(), hide() calls close(), and
+// isPluginOpen() reads `opened`.
 Item {
   id: root
 
@@ -25,15 +21,11 @@ Item {
   readonly property string pluginId: (manifest && manifest.id) ? String(manifest.id) : "io.github.sadsfae.nota"
   readonly property string home: Quickshell.env("HOME")
   readonly property string configPath: home + "/.config/omarchy/nota.json"
-  readonly property string positionPath: home + "/.local/state/omarchy/nota-position.json"
 
   readonly property color textColor: Color.popups.text
   readonly property color surfaceColor: Color.popups.background
   readonly property color borderColor: Color.popups.border
   readonly property color accentColor: Color.accent
-
-  readonly property int minCardWidth: 220
-  readonly property int minCardHeight: 140
 
   property bool opened: false
   property bool restoring: false
@@ -53,9 +45,6 @@ Item {
   property string defaultPath: ""
   property int autosaveMs: 400
   property bool rememberPosition: true
-
-  property real cardX: 0
-  property real cardY: 0
   property int cardWidth: 680
   property int cardHeight: 440
 
@@ -76,15 +65,12 @@ Item {
   }
 
   function close() {
-    root.persistPosition()
     root.flushNow()
     root.opened = false
     root.saveAsOpen = false
   }
 
-  function dismiss() {
-    root.close()
-  }
+  function dismiss() { root.close() }
 
   function parseLoose(raw) {
     try { return JSON.parse(String(raw || "")) || {} } catch (e) { return {} }
@@ -93,7 +79,6 @@ Item {
   function attach() {
     root.saveError = false
     configFile.reload()
-    positionFile.reload()
   }
 
   function applyConfig(raw) {
@@ -111,62 +96,6 @@ Item {
       autosaveMs: root.autosaveMs,
       rememberPosition: root.rememberPosition
     }, null, 2))
-  }
-
-  function applyPosition(raw) {
-    root.lastPositionRaw = String(raw || "")
-    var info = root.parseLoose(raw)
-    if (info.w) root.cardWidth = Math.max(root.minCardWidth, Number(info.w) || root.cardWidth)
-    if (info.h) root.cardHeight = Math.max(root.minCardHeight, Number(info.h) || root.cardHeight)
-    // The layer surface must be laid out before clamping; otherwise retry.
-    if (!(panel.width > 0 && panel.height > 0)) {
-      positionTimer.start()
-      return
-    }
-    var x = Number(info.x)
-    var y = Number(info.y)
-    if (!isFinite(x) || !isFinite(y)) {
-      // No saved position yet: centre the card on the current monitor.
-      x = Math.max(Style.gapsOut, (panel.width - root.cardWidth) / 2)
-      y = Math.max(Style.gapsOut, (panel.height - root.cardHeight) / 2)
-    }
-    var point = Store.clampPosition(x, y, panel.width, panel.height, root.cardWidth, root.cardHeight, Style.gapsOut)
-    root.cardX = point.x
-    root.cardY = point.y
-  }
-
-  function persistPosition() {
-    if (!root.rememberPosition) return
-    positionFile.setText(JSON.stringify({
-      x: Math.round(root.cardX), y: Math.round(root.cardY),
-      w: root.cardWidth, h: root.cardHeight
-    }))
-  }
-
-  function moveCard(x, y) {
-    var point = Store.clampPosition(x, y, panel.width, panel.height, root.cardWidth, root.cardHeight, Style.gapsOut)
-    root.cardX = point.x
-    root.cardY = point.y
-    root.persistPosition()
-  }
-
-  function resizeFrom(corner, dx, dy) {
-    var nw = root.cardWidth
-    var nh = root.cardHeight
-    var nx = root.cardX
-    var ny = root.cardY
-    if (corner === "br") { nw += dx; nh += dy }
-    else if (corner === "bl") { nw -= dx; nx += dx; nh += dy }
-    else if (corner === "tr") { nw += dx; nh -= dy; ny += dy }
-    else if (corner === "tl") { nw -= dx; nx += dx; nh -= dy; ny += dy }
-    nw = Math.max(root.minCardWidth, nw)
-    nh = Math.max(root.minCardHeight, nh)
-    var point = Store.clampPosition(nx, ny, panel.width, panel.height, nw, nh, Style.gapsOut)
-    root.cardX = point.x
-    root.cardY = point.y
-    root.cardWidth = Math.round(nw)
-    root.cardHeight = Math.round(nh)
-    root.persistPosition()
   }
 
   function noteEdited() {
@@ -219,18 +148,10 @@ Item {
     id: configFile
     path: root.configPath
     atomicWrites: true
+    watchChanges: true
     printErrors: false
     onLoaded: root.applyConfig(text())
     onLoadFailed: root.applyConfig("")
-  }
-
-  FileView {
-    id: positionFile
-    path: root.positionPath
-    atomicWrites: true
-    printErrors: false
-    onLoaded: root.applyPosition(text())
-    onLoadFailed: {}
   }
 
   FileView {
@@ -271,130 +192,74 @@ Item {
     onTriggered: root.flush()
   }
 
-  PanelWindow {
-    id: panel
+  // A regular, floating window. Size is a hint; Hyprland floats it and the user
+  // can drag it to any monitor or workspace. Position is remembered by the WM.
+  FloatingWindow {
+    id: window
+    title: "Nota"
     visible: root.opened
-    anchors { top: true; bottom: true; left: true; right: true }
+    implicitWidth: root.cardWidth
+    implicitHeight: root.cardHeight
+    minimumSize: Qt.size(240, 160)
     color: "transparent"
-    exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.namespace: "nota"
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: root.opened ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-
-    // Click outside the card to dismiss. The card is declared after this, so
-    // it sits on top and its clicks do not reach here.
-    MouseArea {
-      anchors.fill: parent
-      onClicked: root.dismiss()
-    }
 
     BorderSurface {
-      id: card
-      width: root.cardWidth
-      height: root.cardHeight
-      x: root.cardX
-      y: root.cardY
+      anchors.fill: parent
       radius: Math.max(0, Style.cornerRadius)
       color: root.surfaceColor
       borderSpec: Border.flat(root.borderColor, 1)
-
-      // Ctrl/Super + drag moves the whole card, like a Hyprland floating
-      // window. Only activates with the modifier, so text editing is untouched.
-      DragHandler {
-        id: moveDrag
-        acceptedModifiers: Qt.ControlModifier | Qt.MetaModifier
-        property real startX: 0
-        property real startY: 0
-        onActiveChanged: if (active) { moveDrag.startX = root.cardX; moveDrag.startY = root.cardY }
-        onTranslationChanged: if (active) root.moveCard(moveDrag.startX + translation.x, moveDrag.startY + translation.y)
-      }
 
       ColumnLayout {
         anchors.fill: parent
         anchors.margins: Style.space(10)
         spacing: Style.space(8)
 
-        // Drag grip.
-        Item {
+        RowLayout {
           Layout.fillWidth: true
-          Layout.preferredHeight: headerRow.implicitHeight
+          spacing: Style.spacing.md
 
-          MouseArea {
-            id: dragHandle
-            anchors.fill: parent
-            acceptedButtons: Qt.LeftButton
-            hoverEnabled: true
-            cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
-
-            property real pressPointerX: 0
-            property real pressPointerY: 0
-            property real pressCardX: 0
-            property real pressCardY: 0
-
-            onPressed: function(mouse) {
-              dragHandle.pressPointerX = mouse.x
-              dragHandle.pressPointerY = mouse.y
-              dragHandle.pressCardX = root.cardX
-              dragHandle.pressCardY = root.cardY
-            }
-            onPositionChanged: function(mouse) {
-              if (dragHandle.pressed) {
-                root.moveCard(
-                  dragHandle.pressCardX + (mouse.x - dragHandle.pressPointerX),
-                  dragHandle.pressCardY + (mouse.y - dragHandle.pressPointerY)
-                )
-              }
-            }
+          Text {
+            textFormat: Text.PlainText
+            text: root.noteName
+            color: root.textColor
+            font.family: Style.font.family
+            font.pixelSize: Style.font.title
+            font.bold: true
+            elide: Text.ElideMiddle
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter
           }
 
-          RowLayout {
-            id: headerRow
-            anchors.fill: parent
-            spacing: Style.spacing.md
+          Text {
+            textFormat: Text.PlainText
+            visible: root.dirty && !root.saveError
+            text: qsTr("Unsaved")
+            color: root.accentColor
+            font.family: Style.font.family
+            font.pixelSize: Style.font.bodySmall
+            Layout.alignment: Qt.AlignVCenter
+          }
 
-            Text {
-              textFormat: Text.PlainText
-              text: root.noteName
-              color: root.textColor
-              font.family: Style.font.family
-              font.pixelSize: Style.font.title
-              font.bold: true
-              elide: Text.ElideMiddle
-              Layout.fillWidth: true
-              Layout.alignment: Qt.AlignVCenter
-            }
+          Text {
+            textFormat: Text.PlainText
+            visible: root.saveError
+            text: qsTr("Save failed")
+            color: Color.urgent
+            font.family: Style.font.family
+            font.pixelSize: Style.font.bodySmall
+            Layout.alignment: Qt.AlignVCenter
+          }
 
-            Text {
-              textFormat: Text.PlainText
-              visible: root.dirty && !root.saveError
-              text: qsTr("Unsaved")
-              color: root.accentColor
-              font.family: Style.font.family
-              font.pixelSize: Style.font.bodySmall
-              Layout.alignment: Qt.AlignVCenter
-            }
+          Button {
+            text: qsTr("Save as...")
+            onClicked: root.startSaveAs()
+            Layout.alignment: Qt.AlignVCenter
+          }
 
-            Text {
-              textFormat: Text.PlainText
-              visible: root.saveError
-              text: qsTr("Save failed")
-              color: Color.urgent
-              font.family: Style.font.family
-              font.pixelSize: Style.font.bodySmall
-              Layout.alignment: Qt.AlignVCenter
-            }
-
-            Button {
-              text: qsTr("Save as...")
-              onClicked: root.startSaveAs()
-              Layout.alignment: Qt.AlignVCenter
-            }
-
-            Button {
-              text: qsTr("Close")
-              onClicked: root.dismiss()
-              Layout.alignment: Qt.AlignVCenter
-            }
+          Button {
+            text: qsTr("Close")
+            onClicked: root.dismiss()
+            Layout.alignment: Qt.AlignVCenter
           }
         }
 
@@ -429,41 +294,6 @@ Item {
             }
           }
         }
-      }
-
-      // Corner resize handles. Declared after the content so they sit on top.
-      // Each drags the matching edge/corner and clamps to the monitor.
-      MouseArea {
-        anchors { left: parent.left; bottom: parent.bottom }
-        width: 18; height: 18
-        cursorShape: Qt.SizeBDiagCursor
-        property real px: 0; property real py: 0
-        onPressed: function(m) { px = m.x; py = m.y }
-        onPositionChanged: function(m) { if (pressed) root.resizeFrom("bl", m.x - px, m.y - py) }
-      }
-      MouseArea {
-        anchors { right: parent.right; bottom: parent.bottom }
-        width: 18; height: 18
-        cursorShape: Qt.SizeFDiagCursor
-        property real px: 0; property real py: 0
-        onPressed: function(m) { px = m.x; py = m.y }
-        onPositionChanged: function(m) { if (pressed) root.resizeFrom("br", m.x - px, m.y - py) }
-      }
-      MouseArea {
-        anchors { left: parent.left; top: parent.top }
-        width: 18; height: 18
-        cursorShape: Qt.SizeFDiagCursor
-        property real px: 0; property real py: 0
-        onPressed: function(m) { px = m.x; py = m.y }
-        onPositionChanged: function(m) { if (pressed) root.resizeFrom("tl", m.x - px, m.y - py) }
-      }
-      MouseArea {
-        anchors { right: parent.right; top: parent.top }
-        width: 18; height: 18
-        cursorShape: Qt.SizeBDiagCursor
-        property real px: 0; property real py: 0
-        onPressed: function(m) { px = m.x; py = m.y }
-        onPositionChanged: function(m) { if (pressed) root.resizeFrom("tr", m.x - px, m.y - py) }
       }
 
       SaveDialog {
