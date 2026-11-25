@@ -47,6 +47,13 @@ function utf8Length(str) {
   return bytes;
 }
 
+// Whether the note needs a write: compare the clamped draft against what is
+// known to be on disk. Equal text needs no write (and FileView.setText would
+// no-op without emitting saved(), so callers must not rely on that signal).
+function needsWrite(text, savedText) {
+  return clampText(text) !== savedText;
+}
+
 // Truncate to the largest prefix within MAX_BYTES of UTF-8, without splitting a
 // surrogate pair. MAX_BYTES is a byte cap, so CJK and emoji count more than
 // once.
@@ -108,6 +115,7 @@ if (typeof module !== "undefined") {
     MAX_BYTES: MAX_BYTES,
     DEFAULT_PATH: DEFAULT_PATH,
     expandPath: expandPath,
+    needsWrite: needsWrite,
     normalizeAutosaveMs: normalizeAutosaveMs,
     normalizeConfig: normalizeConfig,
     clampText: clampText,

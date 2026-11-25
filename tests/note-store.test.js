@@ -74,6 +74,19 @@ test("clampPosition passes through an in-bounds position", function () {
 test("noteName returns the basename", function () {
   assert.strictEqual(Store.noteName("/a/b/Inbox.md"), "Inbox.md");
 });
+test("needsWrite is false for equal text and true for a change", function () {
+  assert.strictEqual(Store.needsWrite("hello", "hello"), false);
+  assert.strictEqual(Store.needsWrite("hello", "hell"), true);
+  assert.strictEqual(Store.needsWrite("", ""), false);
+  assert.strictEqual(Store.needsWrite("new", ""), true);
+});
+
+test("needsWrite clamps the draft before comparing", function () {
+  var big = "x".repeat(Store.MAX_BYTES + 10);
+  assert.strictEqual(Store.needsWrite(big, Store.clampText(big)), false);
+  assert.strictEqual(Store.needsWrite("x".repeat(Store.MAX_BYTES - 1), Store.clampText(big)), true);
+});
+
 test("noteDirectory returns the parent directory", function () {
   assert.strictEqual(Store.noteDirectory("/a/b/Inbox.md"), "/a/b");
 });
