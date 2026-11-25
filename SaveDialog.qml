@@ -79,7 +79,6 @@ Item {
 
       Button {
         text: qsTr("Browse")
-        flat: true
         onClicked: browseProc.running = true
       }
     }
@@ -98,13 +97,11 @@ Item {
 
       Button {
         text: qsTr("Save")
-        flat: true
         onClicked: dialog.commit(pathField.text, defaultCheck.checked)
       }
 
       Button {
         text: qsTr("Cancel")
-        flat: true
         onClicked: dialog.cancel()
       }
     }

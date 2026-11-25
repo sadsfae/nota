@@ -379,7 +379,6 @@ Item {
 
             Button {
               text: qsTr("Save as...")
-              flat: true
               onClicked: root.startSaveAs()
             }
           }
