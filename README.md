@@ -8,13 +8,14 @@ Nota is an [Omarchy](https://omarchy.org/) shell plugin. It is not a full editor
 and it does not manage a collection of notes. It is a scratch note with a
 default home, exactly where you left it.
 
+![Nota](preview.png)
+
 ## Features
 
 - In the top bar, shown with a hand-writing-note icon. Left-click toggles the
   note.
-- Floating card that can be grabbed by its top grip or Ctrl/Super+dragged
-anywhere, the same feel as Omacalc, and resized from any corner. Its position
-and size are remembered.
+- Floating card that can be grabbed and dragged to any monitor or workspace,
+  the same feel as Omacalc. Its position and size are remembered.
 - Pastes and copies like a normal editor: `Ctrl+V` and `Ctrl+Shift+V` paste,
   middle-click pastes the primary selection, and `Ctrl+C` (or selecting with
   the middle button) copies.
@@ -59,12 +60,12 @@ is free. If it is taken, `hl.unbind(...)` first or pick another chord.
 
 - Click the Nota icon in the top bar, or press the hotkey, to open the note.
 - Type. The note autosaves shortly after you pause and again when it closes.
-- Move the card by dragging the grip at the top, or hold `Ctrl` (or `Super`)
-  and drag anywhere on it, like a Hyprland floating window.
+- Move the note by holding `Ctrl` and dragging it (Hyprland's move binding), or
+  grab the header. It can be dragged to another monitor or virtual workspace.
 - Resize the card by dragging any of its four corners.
 - `Ctrl+C` copies a selection, `Ctrl+V` and `Ctrl+Shift+V` paste, and
   middle-click pastes the current selection. Selection is always on.
-- Click outside the card or press `Esc` to close it.
+- Press the `Close` button or `Esc` to hide the note back to the bar.
 - The footer shows the file you are writing, an `Unsaved` marker while changes
   are pending, and a `Save as...` button that opens the save-as dialog.
 - In the save-as dialog, type a destination path or press `Browse` to pick one
@@ -118,6 +119,20 @@ This runs the Node logic tests, JSON and SVG parse checks, and (when the
 The QML logic that does not touch a surface lives in `NoteStore.js` and
 is covered by `tests/note-store.test.js`, so it runs under Node without a
 compositor.
+
+## Contributing
+
+We accept pull requests to the `main` branch. Open an issue first, implement it
+on a fresh branch off `main`, verify locally, then open a PR into `main`.
+
+Use [Conventional Commits](https://www.conventionalcommits.org/): a `feat:`,
+`fix:`, `chore:`, `doc:`, `refactor:`, or similar prefix, a clear summary, and
+a `fixes: <issue-url>` line when the change closes an issue.
+
+Bump `manifest.json` version and add a `CHANGELOG.md` entry for any
+user-visible change. CI runs the Node logic tests, the manifest validator, and
+QML lint on every push and pull request; run `bash tests/test-release.sh`
+before opening a PR.
 
 ## License
 
