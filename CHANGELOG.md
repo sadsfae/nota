@@ -7,6 +7,13 @@ Commit messages use Conventional Commits (`feat:`, `fix:`, `chore:`, `doc:`).
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-11-25
+
+### Fixed
+- `Browse` works again: `exec()` without arguments cannot resolve Quickshell's
+  `Process.exec` overloads, so the button did nothing. The command is now
+  passed explicitly.
+
 ## [0.4.1] - 2026-11-25
 
 ### Fixed
