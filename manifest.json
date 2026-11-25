@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.sadsfae.nota",
   "name": "Nota",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "author": "Will Foster",
   "license": "MIT",
   "description": "A simple, floating note-taking widget for the Omarchy top bar, with autosave and a hotkey toggle.",
