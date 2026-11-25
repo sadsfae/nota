@@ -56,8 +56,8 @@ Item {
 
   property real cardX: 0
   property real cardY: 0
-  property int cardWidth: 480
-  property int cardHeight: 340
+  property int cardWidth: 680
+  property int cardHeight: 440
 
   property string saveAsPath: ""
   property bool saveAsMakeDefault: true
@@ -380,6 +380,11 @@ Item {
             Button {
               text: qsTr("Save as...")
               onClicked: root.startSaveAs()
+            }
+
+            Button {
+              text: qsTr("Close")
+              onClicked: root.dismiss()
             }
           }
         }
