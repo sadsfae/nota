@@ -7,6 +7,13 @@ Commit messages use Conventional Commits (`feat:`, `fix:`, `chore:`, `doc:`).
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-25
+
+### Fixed
+- Cancelling the file chooser opened by `Browse` no longer reopens it in an
+  endless loop: the chooser is now started with `exec()` and the button is
+  disabled while it runs.
+
 ## [0.4.0] - 2026-11-25
 
 ### Added
