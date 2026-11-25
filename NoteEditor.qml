@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
-import Quickshell.Hyprland
 import Quickshell.Wayland
 import qs.Commons
 import qs.Ui
@@ -269,20 +268,8 @@ Item {
     onTriggered: root.flush()
   }
 
-  readonly property var activeScreen: {
-    var mon = Hyprland.focusedMonitor
-    var screens = Quickshell.screens || []
-    if (mon) {
-      for (var i = 0; i < screens.length; i++) {
-        if (String(screens[i].name || "") === String(mon.name || "")) return screens[i]
-      }
-    }
-    return screens.length ? screens[0] : null
-  }
-
   PanelWindow {
     id: panel
-    screen: root.activeScreen
     visible: root.opened
     anchors { top: true; bottom: true; left: true; right: true }
     color: "transparent"
