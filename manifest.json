@@ -12,8 +12,8 @@
   ],
   "keepLoaded": true,
   "entryPoints": {
-    "barWidget": "omarchy/NoteWidget.qml",
-    "overlay": "omarchy/NoteEditor.qml"
+    "barWidget": "NoteWidget.qml",
+    "overlay": "NoteEditor.qml"
   },
   "barWidget": {
     "displayName": "Nota",

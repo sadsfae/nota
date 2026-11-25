@@ -8,7 +8,6 @@ import Quickshell.Wayland
 import qs.Commons
 import qs.Ui
 import "NoteStore.js" as Store
-import "SaveDialog.qml" as SaveDialog
 
 // Nota floating note surface. A layer-shell card that can be dragged anywhere
 // on the monitor (grip, or Ctrl/Super+drag), resized from any corner, pastes

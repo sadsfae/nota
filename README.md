@@ -115,7 +115,7 @@ bash tests/test-release.sh
 This runs the Node logic tests, JSON and SVG parse checks, and (when the
 `omarchy` CLI is on `PATH`) `omarchy plugin validate .`.
 
-The QML logic that does not touch a surface lives in `omarchy/NoteStore.js` and
+The QML logic that does not touch a surface lives in `NoteStore.js` and
 is covered by `tests/note-store.test.js`, so it runs under Node without a
 compositor.
 

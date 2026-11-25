@@ -1,7 +1,7 @@
 "use strict";
 
 var assert = require("assert");
-var Store = require("../omarchy/NoteStore.js");
+var Store = require("../NoteStore.js");
 
 var failures = 0;
 function test(name, fn) {
