@@ -56,6 +56,15 @@ o.bind("SUPER + N", "Nota", "omarchy-shell -q shell toggle io.github.sadsfae.not
 `SUPER + N` is the default used by several other capture plugins, so confirm it
 is free. If it is taken, `hl.unbind(...)` first or pick another chord.
 
+## Remove
+
+```sh
+omarchy plugin remove io.github.sadsfae.nota
+```
+
+Removing the plugin leaves `~/.config/omarchy/nota.json` and your note file in
+place. Delete those if you no longer want them.
+
 ## Usage
 
 - Click the Nota icon in the top bar, or press the hotkey, to open the note.
@@ -136,4 +145,4 @@ before opening a PR.
 
 ## License
 
-[GPL-3.0-or-later](LICENSE)
+[MIT](LICENSE)
