@@ -14,7 +14,8 @@ Panel {
 
   readonly property string pluginId: "io.github.sadsfae.nota"
   readonly property string omarchyPath: Quickshell.env("OMARCHY_PATH") || "/usr/share/omarchy"
-
+  readonly property string assetPath: Quickshell.env("HOME")
+    + "/.config/omarchy/plugins/" + root.pluginId + "/assets/nota.svg"
   function toggle() {
     Quickshell.execDetached([
       root.omarchyPath + "/bin/omarchy-shell",
@@ -32,7 +33,7 @@ Panel {
         Image {
           id: img
           anchors.fill: parent
-          source: Qt.resolvedUrl("assets/nota.svg")
+          source: "file://" + root.assetPath
           fillMode: Image.PreserveAspectFit
           smooth: true
         }
