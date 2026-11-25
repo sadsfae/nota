@@ -76,6 +76,7 @@ Item {
   }
 
   function close() {
+    root.persistPosition()
     root.flushNow()
     root.opened = false
     root.saveAsOpen = false
@@ -113,23 +114,25 @@ Item {
   }
 
   function applyPosition(raw) {
+    root.lastPositionRaw = String(raw || "")
     var info = root.parseLoose(raw)
     if (info.w) root.cardWidth = Math.max(root.minCardWidth, Number(info.w) || root.cardWidth)
     if (info.h) root.cardHeight = Math.max(root.minCardHeight, Number(info.h) || root.cardHeight)
+    // The layer surface must be laid out before clamping; otherwise retry.
+    if (!(panel.width > 0 && panel.height > 0)) {
+      positionTimer.start()
+      return
+    }
     var x = Number(info.x)
     var y = Number(info.y)
-    if (!isFinite(x)) x = Style.gapsOut
-    if (!isFinite(y)) y = Style.gapsOut
-    // Clamp only once the layer surface has a size; otherwise trust the saved
-    // position so a not-yet-laid-out surface does not reset it to the margin.
-    if (panel.width > 0 && panel.height > 0) {
-      var point = Store.clampPosition(x, y, panel.width, panel.height, root.cardWidth, root.cardHeight, Style.gapsOut)
-      root.cardX = point.x
-      root.cardY = point.y
-    } else {
-      root.cardX = x
-      root.cardY = y
+    if (!isFinite(x) || !isFinite(y)) {
+      // No saved position yet: centre the card on the current monitor.
+      x = Math.max(Style.gapsOut, (panel.width - root.cardWidth) / 2)
+      y = Math.max(Style.gapsOut, (panel.height - root.cardHeight) / 2)
     }
+    var point = Store.clampPosition(x, y, panel.width, panel.height, root.cardWidth, root.cardHeight, Style.gapsOut)
+    root.cardX = point.x
+    root.cardY = point.y
   }
 
   function persistPosition() {
@@ -294,7 +297,6 @@ Item {
       radius: Math.max(0, Style.cornerRadius)
       color: root.surfaceColor
       borderSpec: Border.flat(root.borderColor, 1)
-      padding: Style.space(6)
 
       // Ctrl/Super + drag moves the whole card, like a Hyprland floating
       // window. Only activates with the modifier, so text editing is untouched.
@@ -315,7 +317,7 @@ Item {
         // Drag grip.
         Item {
           Layout.fillWidth: true
-          Layout.preferredHeight: Style.space(12)
+          Layout.preferredHeight: headerRow.implicitHeight
 
           MouseArea {
             id: dragHandle
@@ -346,17 +348,20 @@ Item {
           }
 
           RowLayout {
+            id: headerRow
             anchors.fill: parent
-            spacing: Style.space(6)
+            spacing: Style.spacing.md
 
             Text {
               textFormat: Text.PlainText
               text: root.noteName
               color: root.textColor
               font.family: Style.font.family
-              font.pixelSize: Style.font.bodySmall
+              font.pixelSize: Style.font.title
+              font.bold: true
               elide: Text.ElideMiddle
               Layout.fillWidth: true
+              Layout.alignment: Qt.AlignVCenter
             }
 
             Text {
@@ -366,6 +371,7 @@ Item {
               color: root.accentColor
               font.family: Style.font.family
               font.pixelSize: Style.font.bodySmall
+              Layout.alignment: Qt.AlignVCenter
             }
 
             Text {
@@ -375,16 +381,19 @@ Item {
               color: Color.urgent
               font.family: Style.font.family
               font.pixelSize: Style.font.bodySmall
+              Layout.alignment: Qt.AlignVCenter
             }
 
             Button {
               text: qsTr("Save as...")
               onClicked: root.startSaveAs()
+              Layout.alignment: Qt.AlignVCenter
             }
 
             Button {
               text: qsTr("Close")
               onClicked: root.dismiss()
+              Layout.alignment: Qt.AlignVCenter
             }
           }
         }
