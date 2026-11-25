@@ -393,8 +393,6 @@ Item {
             Button {
               text: qsTr("Save as...")
               flat: true
-              font.family: Style.font.family
-              font.pixelSize: Style.font.bodySmall
               onClicked: root.startSaveAs()
             }
           }

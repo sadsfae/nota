@@ -80,8 +80,6 @@ Item {
       Button {
         text: qsTr("Browse")
         flat: true
-        font.family: Style.font.family
-        font.pixelSize: Style.font.body
         onClicked: browseProc.running = true
       }
     }
@@ -94,8 +92,6 @@ Item {
         id: defaultCheck
         text: qsTr("Use as default")
         checked: dialog.makeDefault
-        font.family: Style.font.family
-        font.pixelSize: Style.font.bodySmall
       }
 
       Item { Layout.fillWidth: true }
@@ -103,16 +99,12 @@ Item {
       Button {
         text: qsTr("Save")
         flat: true
-        font.family: Style.font.family
-        font.pixelSize: Style.font.body
         onClicked: dialog.commit(pathField.text, defaultCheck.checked)
       }
 
       Button {
         text: qsTr("Cancel")
         flat: true
-        font.family: Style.font.family
-        font.pixelSize: Style.font.body
         onClicked: dialog.cancel()
       }
     }
