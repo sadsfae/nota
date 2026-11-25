@@ -1,9 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#cacccc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-  <!-- A page with a hand writing on it: three ruled lines and a pen. -->
-  <path d="M4 4.5 H15.5"/>
-  <path d="M4 9 H11"/>
-  <path d="M4 13.5 H8.5"/>
-  <path d="M4 18 H12.5"/>
-  <path d="M14.2 19.6 20 13.8 a1.7 1.7 0 0 0 -2.4 -2.4 L11.8 17.2 l-0.5 2.9 2.9 -0.5 Z"/>
-  <path d="M17.0 12.0 19.4 14.4"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#cacccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <!-- A simple pencil, drawn at an angle. Single monochrome path so it reads
+       clearly at bar-icon size. -->
+  <path d="M17 3 a2.8 2.8 0 1 1 4 4 L8.5 19.5 L3 21 l1.5 -5.5 Z"/>
+  <path d="M15 6 l3 3"/>
 </svg>
