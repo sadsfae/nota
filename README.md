@@ -15,11 +15,12 @@ default home, exactly where you left it.
 - Floating card that can be grabbed by its top grip or Ctrl/Super+dragged
 anywhere, the same feel as Omacalc, and resized from any corner. Its position
 and size are remembered.
-- Toggle from a hotkey (the bar icon and the hotkey drive the same toggle).
 - Pastes and copies like a normal editor: `Ctrl+V` and `Ctrl+Shift+V` paste,
   middle-click pastes the primary selection, and `Ctrl+C` (or selecting with
   the middle button) copies.
 - Autosaves while you type (debounced) and again when the card closes.
+- Save-as offers a `Browse` button that opens Omarchy's file chooser, so the
+  destination follows whatever file manager the desktop registers.
 - Writes to one configured default file. A minimal save-as dialog lets you type
   a different path, save there, and optionally make it the new default.
 - Follows the active Omarchy theme (colours, corner radius) live.
@@ -66,8 +67,9 @@ is free. If it is taken, `hl.unbind(...)` first or pick another chord.
 - Click outside the card or press `Esc` to close it.
 - The footer shows the file you are writing, an `Unsaved` marker while changes
   are pending, and a `Save as...` button that opens the save-as dialog.
-- In the save-as dialog, type a destination path, tick `Use as default` to make
-  it the file Nota always writes to, and press `Save`.
+- In the save-as dialog, type a destination path or press `Browse` to pick one
+  with Omarchy's file chooser, tick `Use as default` to make it the file Nota
+  always writes to, and press `Save`.
 
 ## Configuration
 
