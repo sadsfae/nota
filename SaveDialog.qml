@@ -80,7 +80,7 @@ Item {
       Button {
         text: qsTr("Browse")
         enabled: !browseProc.running
-        onClicked: browseProc.exec()
+        onClicked: browseProc.exec(browseProc.command)
       }
     }
 
