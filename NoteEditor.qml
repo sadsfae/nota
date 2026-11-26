@@ -90,6 +90,10 @@ Item {
 
   function applyConfig(raw) {
     var cfg = Store.normalizeConfig(root.parseLoose(raw), root.home)
+    // A dirty draft means the last write failed; keep the edits. Arming
+    // skipNextLoad also covers a changed defaultPath, whose repath starts a
+    // load of the new path that would otherwise clobber the draft.
+    if (root.dirty && cfg.defaultPath !== root.defaultPath) root.skipNextLoad = true
     root.defaultPath = cfg.defaultPath
     root.autosaveMs = cfg.autosaveMs
     root.rememberPosition = cfg.rememberPosition
