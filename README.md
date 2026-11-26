@@ -1,5 +1,7 @@
 # Nota
 
+[![Omarchy Plugin Marketplace](assets/marketplace_badge.svg)](https://plugins.omarchy.org/plugin.html?id=io.github.sadsfae.nota)
+
 A simple, Quickshell-based note-taking widget that lives in the Omarchy top bar.
 Click its icon or press a hotkey and a small floating note appears. It autosaves
 as you type and remembers where you put it.
