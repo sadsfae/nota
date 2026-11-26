@@ -7,6 +7,13 @@ Commit messages use Conventional Commits (`feat:`, `fix:`, `chore:`, `doc:`).
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-11-26
+
+### Fixed
+- A hand-edited `defaultPath` in the config no longer discards unsaved edits
+  on reopen after a failed save: the repath load is skipped while the draft
+  is dirty.
+
 ## [0.4.3] - 2026-11-26
 
 ### Fixed
