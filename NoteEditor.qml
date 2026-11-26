@@ -190,7 +190,9 @@ Item {
       root.saveError = false
     }
     onSaved: {
-      if (root.pendingText === Store.clampText(root.draft)) root.lastSavedText = root.pendingText
+      // The completed write is by definition pendingText; dirty recompares
+      // the live draft, so a revert during the write stays dirty and resaves.
+      root.lastSavedText = root.pendingText
       root.saveError = false
     }
     onSaveFailed: function(error) { root.saveError = true }

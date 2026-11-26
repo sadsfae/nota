@@ -7,6 +7,13 @@ Commit messages use Conventional Commits (`feat:`, `fix:`, `chore:`, `doc:`).
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-11-26
+
+### Fixed
+- Undoing edits back to the previous text while an autosave write is in
+  flight no longer loses the revert: the completed write updates the on-disk
+  baseline unconditionally, so the reverted text is saved on the next pass.
+
 ## [0.4.2] - 2026-11-25
 
 ### Fixed
