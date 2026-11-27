@@ -21,6 +21,8 @@ default home, exactly where you left it.
 - Pastes and copies like a normal editor: `Ctrl+V` and `Ctrl+Shift+V` paste,
   middle-click pastes the primary selection, and `Ctrl+C` (or selecting with
   the middle button) copies.
+- Long notes scroll inside the card with the mouse wheel (no scrollbar is
+  shown; the wheel scrolls and the caret stays visible).
 - Autosaves while you type (debounced) and again when the card closes.
 - Save-as offers a `Browse` button that opens Omarchy's file chooser, so the
   destination follows whatever file manager the desktop registers.

@@ -7,6 +7,10 @@ Commit messages use Conventional Commits (`feat:`, `fix:`, `chore:`, `doc:`).
 
 ## [Unreleased]
 
+### Added
+- Long notes scroll inside the editor with the mouse wheel; no scrollbar is
+  shown. Before, a note taller than the card was clipped and unreachable.
+
 ## [0.4.4] - 2026-11-26
 
 ### Fixed

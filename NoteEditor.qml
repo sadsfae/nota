@@ -296,34 +296,43 @@ Item {
           }
         }
 
-        TextArea {
-          id: editor
+        // TextArea is not scrollable by itself (Qt docs); the ScrollView makes
+        // long notes scrollable with the wheel and keeps the caret in view.
+        // No scrollbar is shown: the note area is a clean editor.
+        ScrollView {
           Layout.fillWidth: true
           Layout.fillHeight: true
-          wrapMode: TextEdit.Wrap
-          selectByMouse: true
-          color: root.textColor
-          selectionColor: root.accentColor
-          font.family: Style.font.family
-          font.pixelSize: Style.font.body
-          placeholderText: qsTr("Note")
-          placeholderTextColor: Qt.alpha(root.textColor, 0.5)
-          onTextChanged: {
-            if (root.restoring) return
-            root.draft = editor.text
-            root.noteEdited()
-          }
-          Keys.onPressed: function(event) {
-            if (event.key === Qt.Key_Escape) {
-              root.dismiss()
-              event.accepted = true
-            } else if (event.key === Qt.Key_V
-                       && (event.modifiers & Qt.ControlModifier)
-                       && (event.modifiers & Qt.ShiftModifier)) {
-              // Paste as plain text. The TextArea is plain, so this mirrors
-              // Ctrl+V; kept explicit because Qt does not bind Ctrl+Shift+V.
-              editor.paste()
-              event.accepted = true
+          clip: true
+          ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+          ScrollBar.vertical.policy: ScrollBar.AlwaysOff
+
+          TextArea {
+            id: editor
+            wrapMode: TextEdit.Wrap
+            selectByMouse: true
+            color: root.textColor
+            selectionColor: root.accentColor
+            font.family: Style.font.family
+            font.pixelSize: Style.font.body
+            placeholderText: qsTr("Note")
+            placeholderTextColor: Qt.alpha(root.textColor, 0.5)
+            onTextChanged: {
+              if (root.restoring) return
+              root.draft = editor.text
+              root.noteEdited()
+            }
+            Keys.onPressed: function(event) {
+              if (event.key === Qt.Key_Escape) {
+                root.dismiss()
+                event.accepted = true
+              } else if (event.key === Qt.Key_V
+                         && (event.modifiers & Qt.ControlModifier)
+                         && (event.modifiers & Qt.ShiftModifier)) {
+                // Paste as plain text. The TextArea is plain, so this mirrors
+                // Ctrl+V; kept explicit because Qt does not bind Ctrl+Shift+V.
+                editor.paste()
+                event.accepted = true
+              }
             }
           }
         }
